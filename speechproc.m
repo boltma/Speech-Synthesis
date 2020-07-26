@@ -33,27 +33,24 @@ function speechproc()
                                         % A是预测系数，E会被用来计算合成激励的能量
 
         if n == 27
-        % (3) 在此位置写程序，观察预测系统的零极点图
-            
+            % (3) 在此位置写程序，观察预测系统的零极点图
+            figure;
+            zplane(1, A);
+            title('27帧时刻预测系统零极点分布图');
         end
         
         s_f = s((n-1)*FL+1:n*FL);       % 本帧语音，下面就要对它做处理
 
         % (4) 在此位置写程序，用filter函数s_f计算激励，注意保持滤波器状态
-
-        
-        % exc((n-1)*FL+1:n*FL) = ... 将你计算得到的激励写在这里
+        [exc((n-1)*FL+1:n*FL), zi_pre] = filter(A, 1, s_f, zi_pre);
 
         % (5) 在此位置写程序，用filter函数和exc重建语音，注意保持滤波器状态
-
-        
-        % s_rec((n-1)*FL+1:n*FL) = ... 将你计算得到的重建语音写在这里
+        [s_rec((n-1)*FL+1:n*FL), zi_rec] = filter(1, A, exc((n-1)*FL+1:n*FL), zi_rec);
 
         % 注意下面只有在得到exc后才会计算正确
         s_Pitch = exc(n*FL-222:n*FL);
         PT = findpitch(s_Pitch);    % 计算基音周期PT（不要求掌握）
         G = sqrt(E*PT);           % 计算合成激励的能量G（不要求掌握）
-
         
         % (10) 在此位置写程序，生成合成激励，并用激励和filter函数产生合成语音
 
@@ -78,17 +75,17 @@ function speechproc()
 
     % (6) 在此位置写程序，听一听 s ，exc 和 s_rec 有何区别，解释这种区别
     % 后面听语音的题目也都可以在这里写，不再做特别注明
-    
+    sound([s; exc; s_rec]/2^15);
 
     % 保存所有文件
-    writespeech('exc.pcm',exc);
-    writespeech('rec.pcm',s_rec);
-    writespeech('exc_syn.pcm',exc_syn);
-    writespeech('syn.pcm',s_syn);
-    writespeech('exc_syn_t.pcm',exc_syn_t);
-    writespeech('syn_t.pcm',s_syn_t);
-    writespeech('exc_syn_v.pcm',exc_syn_v);
-    writespeech('syn_v.pcm',s_syn_v);
+%     writespeech('exc.pcm',exc);
+%     writespeech('rec.pcm',s_rec);
+%     writespeech('exc_syn.pcm',exc_syn);
+%     writespeech('syn.pcm',s_syn);
+%     writespeech('exc_syn_t.pcm',exc_syn_t);
+%     writespeech('syn_t.pcm',s_syn_t);
+%     writespeech('exc_syn_v.pcm',exc_syn_v);
+%     writespeech('syn_v.pcm',s_syn_v);
 return
 
 % 从PCM文件中读入语音
