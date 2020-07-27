@@ -9,9 +9,9 @@ freqz(1, A);
 
 figure;
 subplot(2, 1, 1);
-n = (0:400)';
+n = (0:100)';
 x = (n == 0);
 y = filter(1, A, x);
 stem(n, y, 'filled');
 subplot(2, 1, 2);
-impz(1, A, 401);
+impz(1, A, 101);

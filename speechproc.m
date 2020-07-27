@@ -15,21 +15,30 @@ function speechproc()
     % 合成滤波器
     exc_syn = zeros(L,1);   % 合成的激励信号（脉冲串）
     s_syn = zeros(L,1);     % 合成语音
+    zi_syn = zeros(P,1);    % 合成滤波器的状态
     % 变调不变速滤波器
     exc_syn_t = zeros(L,1);   % 合成的激励信号（脉冲串）
     s_syn_t = zeros(L,1);     % 合成语音
+    zi_syn_t = zeros(P,1);    % 合成滤波器的状态
     % 变速不变调滤波器（假设速度减慢一倍）
     exc_syn_v = zeros(2*L,1);   % 合成的激励信号（脉冲串）
     s_syn_v = zeros(2*L,1);     % 合成语音
+    zi_syn_v = zeros(P,1);    % 合成滤波器的状态
 
     hw = hamming(WL);       % 汉明窗
+    
+    FL_v = 2*FL;             % 变速不变调帧长
+    
+    p = 2*FL+1;             % 合成激励信号位置
+    p_v = 2*FL_v+1;
+    p_t = 2*FL+1;
     
     % 依次处理每帧语音
     for n = 3:FN
 
         % 计算预测系数（不需要掌握）
         s_w = s(n*FL-WL+1:n*FL).*hw;    %汉明窗加权后的语音
-        [A E] = lpc(s_w, P);            %用线性预测法计算P个预测系数
+        [A, E] = lpc(s_w, P);            %用线性预测法计算P个预测系数
                                         % A是预测系数，E会被用来计算合成激励的能量
 
         if n == 27
@@ -53,29 +62,51 @@ function speechproc()
         G = sqrt(E*PT);           % 计算合成激励的能量G（不要求掌握）
         
         % (10) 在此位置写程序，生成合成激励，并用激励和filter函数产生合成语音
-
+        while p <= n*FL
+            exc_syn(p) = 1;
+            p = p + PT;
+        end
         
-        % exc_syn((n-1)*FL+1:n*FL) = ... 将你计算得到的合成激励写在这里
-        % s_syn((n-1)*FL+1:n*FL) = ...   将你计算得到的合成语音写在这里
+        [s_syn((n-1)*FL+1:n*FL), zi_syn] = filter(G, A, exc_syn((n-1)*FL+1:n*FL), zi_syn);
 
         % (11) 不改变基音周期和预测系数，将合成激励的长度增加一倍，再作为filter
         % 的输入得到新的合成语音，听一听是不是速度变慢了，但音调没有变。
-
+        while p_v <= n*FL_v
+            exc_syn_v(p_v) = 1;
+            p_v = p_v + PT;
+        end
         
-        % exc_syn_v((n-1)*FL_v+1:n*FL_v) = ... 将你计算得到的加长合成激励写在这里
-        % s_syn_v((n-1)*FL_v+1:n*FL_v) = ...   将你计算得到的加长合成语音写在这里
+        [s_syn_v((n-1)*FL_v+1:n*FL_v), zi_syn_v] = filter(G, A, exc_syn_v((n-1)*FL_v+1:n*FL_v), zi_syn_v);
         
         % (13) 将基音周期减小一半，将共振峰频率增加150Hz，重新合成语音，听听是啥感受～
-
+        while p_t <= n*FL
+            exc_syn_t(p_t) = 1;
+            p_t = p_t + round(PT/2);
+        end
         
-        % exc_syn_t((n-1)*FL+1:n*FL) = ... 将你计算得到的变调合成激励写在这里
-        % s_syn_t((n-1)*FL+1:n*FL) = ...   将你计算得到的变调合成语音写在这里
+        A_new = peak_rise(A, 150, 8000);
+        [s_syn_t((n-1)*FL+1:n*FL), zi_syn_t] = filter(G, A_new, exc_syn_t((n-1)*FL+1:n*FL), zi_syn_t);
         
     end
 
     % (6) 在此位置写程序，听一听 s ，exc 和 s_rec 有何区别，解释这种区别
     % 后面听语音的题目也都可以在这里写，不再做特别注明
-    sound([s; exc; s_rec]/2^15);
+    sound([s; exc; s_rec; s_syn; s_syn_v; s_syn_t] / 2^15, 8000);
+    
+    figure;
+    subplot(6, 1, 1);
+    fft_singleband_plot(s / 2^15, 8000);
+    subplot(6, 1, 2);
+    fft_singleband_plot(exc / 2^15, 8000);
+    subplot(6, 1, 3);
+    fft_singleband_plot(s_rec / 2^15, 8000);
+    subplot(6, 1, 4);
+    fft_singleband_plot(s_syn / 2^15, 8000);
+    subplot(6, 1, 5);
+    fft_singleband_plot(s_syn_t / 2^15, 8000);
+    subplot(6, 1, 6);
+    fft_singleband_plot(s_syn_v / 2^15, 8000);
+    
 
     % 保存所有文件
 %     writespeech('exc.pcm',exc);
