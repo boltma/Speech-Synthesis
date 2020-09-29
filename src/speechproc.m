@@ -103,9 +103,9 @@ function speechproc()
     subplot(6, 1, 4);
     fft_singleband_plot(s_syn / 2^15, 8000);
     subplot(6, 1, 5);
-    fft_singleband_plot(s_syn_t / 2^15, 8000);
-    subplot(6, 1, 6);
     fft_singleband_plot(s_syn_v / 2^15, 8000);
+    subplot(6, 1, 6);
+    fft_singleband_plot(s_syn_t / 2^15, 8000);
     
 
     % 保存所有文件

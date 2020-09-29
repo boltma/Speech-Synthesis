@@ -7,5 +7,6 @@ function fft_singleband_plot(x, Fs)
     y = y(1:L/2+1);
     y(2:end-1) = 2 * y(2:end-1);
     plot(f, y);
+    ylim([0 0.02])
 end
 
