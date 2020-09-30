@@ -44,7 +44,7 @@ function speechproc()
         if n == 27
             % (3) 在此位置写程序，观察预测系统的零极点图
             figure;
-            zplane(1, A);
+            zplane(A, 1);
             title('27帧时刻预测系统零极点分布图');
         end
         
@@ -91,21 +91,54 @@ function speechproc()
 
     % (6) 在此位置写程序，听一听 s ，exc 和 s_rec 有何区别，解释这种区别
     % 后面听语音的题目也都可以在这里写，不再做特别注明
-    sound([s; exc; s_rec; s_syn; s_syn_v; s_syn_t] / 2^15, 8000);
+    Fs = 8000;              % 采样率
+    
+    sound([s; exc; s_rec; s_syn; s_syn_v; s_syn_t] / 2^15, Fs);
+    
+    % 作完整波形
+    figure;
+    time = (0:L-1) / Fs;    % 由采样率生成对应时间
+    subplot(3, 1, 1);
+    plot(time, s);
+    ylim([-2.5e4, 2.5e4]);
+    subplot(3, 1, 2);
+    plot(time, exc);
+    ylim([-2.5e4, 2.5e4]);
+    subplot(3, 1, 3);
+    plot(time, s_rec);
+    ylim([-2.5e4, 2.5e4]);
+%     subplot(6, 1, 4);
+%     plot(time, s_syn);
+%     subplot(6, 1, 5);
+%     time_v = (0:2*L-1) / Fs;
+%     plot(time_v, s_syn_v);
+%     subplot(6, 1, 6);
+%     plot(time, s_syn_t);
     
     figure;
+    subplot(3, 1, 1);
+    plot(time(2400:4000), s(2400:4000));
+    ylim([-2.5e4, 2.5e4]);
+    subplot(3, 1, 2);
+    plot(time(2400:4000), exc(2400:4000));
+    ylim([-2.5e4, 2.5e4]);
+    subplot(3, 1, 3);
+    plot(time(2400:4000), s_rec(2400:4000));
+    ylim([-2.5e4, 2.5e4]);
+
+    figure;
     subplot(6, 1, 1);
-    fft_singleband_plot(s / 2^15, 8000);
+    fft_singleband_plot(s, Fs);
     subplot(6, 1, 2);
-    fft_singleband_plot(exc / 2^15, 8000);
+    fft_singleband_plot(exc, Fs);
     subplot(6, 1, 3);
-    fft_singleband_plot(s_rec / 2^15, 8000);
+    fft_singleband_plot(s_rec, Fs);
     subplot(6, 1, 4);
-    fft_singleband_plot(s_syn / 2^15, 8000);
+    fft_singleband_plot(s_syn, Fs);
     subplot(6, 1, 5);
-    fft_singleband_plot(s_syn_v / 2^15, 8000);
+    fft_singleband_plot(s_syn_v, Fs);
     subplot(6, 1, 6);
-    fft_singleband_plot(s_syn_t / 2^15, 8000);
+    fft_singleband_plot(s_syn_t, Fs);
     
 
     % 保存所有文件
