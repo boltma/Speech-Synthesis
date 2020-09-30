@@ -27,11 +27,13 @@ function speechproc()
 
     hw = hamming(WL);       % 汉明窗
     
-    FL_v = 2*FL;             % 变速不变调帧长
+    FL_v = 2*FL;            % 变速不变调帧长
     
     p = 2*FL+1;             % 合成激励信号位置
     p_v = 2*FL_v+1;
     p_t = 2*FL+1;
+    
+    Fs = 8000;              % 采样率
     
     % 依次处理每帧语音
     for n = 3:FN
@@ -84,72 +86,87 @@ function speechproc()
             p_t = p_t + round(PT/2);
         end
         
-        A_new = peak_rise(A, 150, 8000);
+        A_new = peak_rise(A, 150, Fs);
         [s_syn_t((n-1)*FL+1:n*FL), zi_syn_t] = filter(G, A_new, exc_syn_t((n-1)*FL+1:n*FL), zi_syn_t);
         
     end
 
     % (6) 在此位置写程序，听一听 s ，exc 和 s_rec 有何区别，解释这种区别
     % 后面听语音的题目也都可以在这里写，不再做特别注明
-    Fs = 8000;              % 采样率
-    
     sound([s; exc; s_rec; s_syn; s_syn_v; s_syn_t] / 2^15, Fs);
     
     % 作完整波形
     figure;
     time = (0:L-1) / Fs;    % 由采样率生成对应时间
-    subplot(3, 1, 1);
+    subplot(6, 1, 1);
     plot(time, s);
     ylim([-2.5e4, 2.5e4]);
-    subplot(3, 1, 2);
+    subplot(6, 1, 2);
     plot(time, exc);
     ylim([-2.5e4, 2.5e4]);
-    subplot(3, 1, 3);
+    subplot(6, 1, 3);
     plot(time, s_rec);
     ylim([-2.5e4, 2.5e4]);
-%     subplot(6, 1, 4);
-%     plot(time, s_syn);
-%     subplot(6, 1, 5);
-%     time_v = (0:2*L-1) / Fs;
-%     plot(time_v, s_syn_v);
-%     subplot(6, 1, 6);
-%     plot(time, s_syn_t);
+    subplot(6, 1, 4);
+    plot(time, s_syn);
+    ylim([-2.5e4, 2.5e4]);
+    subplot(6, 1, 5);
+    time_v = (0:2*L-1) / Fs;
+    plot(time_v, s_syn_v);
+    ylim([-2.5e4, 2.5e4]);
+    subplot(6, 1, 6);
+    plot(time, s_syn_t);
+    ylim([-2.5e4, 2.5e4]);
     
     figure;
-    subplot(3, 1, 1);
+    subplot(6, 1, 1);
     plot(time(2400:4000), s(2400:4000));
     ylim([-2.5e4, 2.5e4]);
-    subplot(3, 1, 2);
+    subplot(6, 1, 2);
     plot(time(2400:4000), exc(2400:4000));
     ylim([-2.5e4, 2.5e4]);
-    subplot(3, 1, 3);
+    subplot(6, 1, 3);
     plot(time(2400:4000), s_rec(2400:4000));
+    ylim([-2.5e4, 2.5e4]);
+    subplot(6, 1, 4);
+    plot(time(2400:4000), s_syn(2400:4000));
+    ylim([-2.5e4, 2.5e4]);
+    subplot(6, 1, 5);
+    plot(time_v(4800:8000), s_syn_v(4800:8000));
+    ylim([-2.5e4, 2.5e4]);
+    subplot(6, 1, 6);
+    plot(time(2400:4000), s_syn_t(2400:4000));
     ylim([-2.5e4, 2.5e4]);
 
     figure;
     subplot(6, 1, 1);
-    fft_singleband_plot(s, Fs);
+    fft_singleside_plot(s, Fs);
+    ylim([0, 600]);
     subplot(6, 1, 2);
-    fft_singleband_plot(exc, Fs);
+    fft_singleside_plot(exc, Fs);
+    ylim([0, 100]);
     subplot(6, 1, 3);
-    fft_singleband_plot(s_rec, Fs);
+    fft_singleside_plot(s_rec, Fs);
+    ylim([0, 600]);
     subplot(6, 1, 4);
-    fft_singleband_plot(s_syn, Fs);
+    fft_singleside_plot(s_syn, Fs);
+    ylim([0, 600]);
     subplot(6, 1, 5);
-    fft_singleband_plot(s_syn_v, Fs);
+    fft_singleside_plot(s_syn_v, Fs);
+    ylim([0, 600]);
     subplot(6, 1, 6);
-    fft_singleband_plot(s_syn_t, Fs);
-    
+    fft_singleside_plot(s_syn_t, Fs);
+    ylim([0, 600]);
 
     % 保存所有文件
-%     writespeech('exc.pcm',exc);
-%     writespeech('rec.pcm',s_rec);
-%     writespeech('exc_syn.pcm',exc_syn);
-%     writespeech('syn.pcm',s_syn);
-%     writespeech('exc_syn_t.pcm',exc_syn_t);
-%     writespeech('syn_t.pcm',s_syn_t);
-%     writespeech('exc_syn_v.pcm',exc_syn_v);
-%     writespeech('syn_v.pcm',s_syn_v);
+    writespeech('exc.pcm',exc);
+    writespeech('rec.pcm',s_rec);
+    writespeech('exc_syn.pcm',exc_syn);
+    writespeech('syn.pcm',s_syn);
+    writespeech('exc_syn_t.pcm',exc_syn_t);
+    writespeech('syn_t.pcm',s_syn_t);
+    writespeech('exc_syn_v.pcm',exc_syn_v);
+    writespeech('syn_v.pcm',s_syn_v);
 return
 
 % 从PCM文件中读入语音
