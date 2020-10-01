@@ -1,5 +1,7 @@
 # 信号与系统——MATLAB综合实验之语音合成
 
+无81 马啸阳 2018011054
+
 ## 语音预测模型
 
 ### (1) 离散时间系统
@@ -428,12 +430,12 @@ function a_new = peak_rise(a, f, Fs)
 %   A_new = peak_rise(A, f, Fs)
     theta = 2 * pi * f / Fs;
     p = roots(a);       % find all poles of polynomial a
-    p_new = arrayfun(@(p) p * exp(theta * sign(imag(p)) * 1j), p);  % rotate poles with angle theta depending on sign of imag(p)
+    p_new = p .* exp(theta * sign(imag(p)) * 1j);  % rotate poles with angle theta depending on sign of imag(p)
     a_new = poly(p_new) * a(1); % times a(1) to get a_new(1) = a(1)
 end
 ```
 
-函数如上所示，首先计算z平面上转过的角度`theta`，由于z平面上$\pi$对应$\frac{f_s}{2}$，因此`theta = 2 * pi * f / Fs`。然后利用`roots`求解极点，再对每个极点进行旋转，旋转通过乘以`exp(theta * sign(imag(p)) * 1j)`完成，这能够做到上半平面极点逆时针旋转$\theta$（`sign(imag(p))`为1），下班平面极点顺时针旋转$\theta$（`sign(imag(p))`为-1），实轴上极点不动（`sign(imag(p))`为0）。此处`arrayfun`用以对矢量中每一个元素执行第一个参数中的匿名函数。最后使用`poly`将极点转为多项式，并乘以首项系数`a(1)`。
+函数如上所示，首先计算z平面上转过的角度`theta`，由于z平面上$\pi$对应$\frac{f_s}{2}$，因此`theta = 2 * pi * f / Fs`。然后利用`roots`求解极点，再对每个极点进行旋转，旋转通过乘以`exp(theta * sign(imag(p)) * 1j)`完成，这能够做到上半平面极点逆时针旋转$\theta$（`sign(imag(p))`为1），下班平面极点顺时针旋转$\theta$（`sign(imag(p))`为-1），实轴上极点不动（`sign(imag(p))`为0）。最后使用`poly`将极点转为多项式，并乘以首项系数`a(1)`。
 
 用该函数提高(1)中系统共振峰频率150Hz，即`a_new = peak_rise(a, 150, 8000);`。可得`a1 = 1.207284, a2 = -0.950600`。同样作零极点图、频率响应、单位样值响应。
 
@@ -509,3 +511,22 @@ ylim([0, 600]);
 观察时域波形，波形有了明显变化，变得更密，同时由于共振峰的提升，整体包络也有所区别。对于局部时域波形，可见波形明显更密（基音周期变为原来一半），同时波形本身也有一定区别，这是由于共振峰改变带来的影响，但总体而言还是可以区分局部波形的三个音。对于频域，明显高频分量增加，但原先低频两个峰值只剩下一个明显的峰值，这也是共振峰的影响。
 
 试听`sound([s; s_syn_t] / 2^15, Fs);`，变调不变速的语音音调更高而时长不变，达成目的，但总体来说听起来仍不够自然，不像女声，这是因为我们使用的模型过于简略的缘故。
+
+## 原创性
+
+全部为原创。
+
+## 实验代码
+
+代码文件夹中含如下文件：
+
+- `*.pcm`：各语音文件
+- `speechproc.m`：主函数，包括(2)、(3)、(4)、(5)、(6)、(10)、(11)、(13)题代码
+- `code_1_1.m`：第(1)题代码
+- `code_2_7.m`：第(7)题代码
+- `code_2_8.m`：第(8)、(9)题代码
+- `code_4_12.m`：第(12)题代码
+- `siggen.m`：第(7)题中用于生成基音周期固定的单位样值串的函数，具体见说明（下同）
+- `peak_rise.m`：第(12)、(13)题中用于提高共振峰频率的函数
+- `fft_singleside_plot.m`：绘制单边傅里叶频域图的函数
+
